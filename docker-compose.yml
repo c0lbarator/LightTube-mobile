@@ -1,0 +1,82 @@
+version: '3.7'
+
+services:
+  lighttube:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - database
+    ports:
+      # Replace 7134 with whichever port you want to connect from
+      - 127.0.0.1:7134:80 
+    environment:
+      # (Required) MongoDB Database Connection String
+      - LIGHTTUBE_MONGODB_CONNSTR=mongodb://lighttube:lighttube@database:27017/
+      # (Optional) MongoDB Database
+      - LIGHTTUBE_MONGODB_DATABASE=lighttube
+      
+      # (Optional) This is the text that will be shown on the home page
+      # Default: Search something to get started!
+      - LIGHTTUBE_MOTD=Search something to get started!
+      
+      # (Optional) Amount of video player data to hold in the cache
+      # Default: 50
+      - LIGHTTUBE_CACHE_SIZE=50
+      
+      # (Optional) Default theme for the interface. Either "light" or "dark"
+      # Default: light
+      - LIGHTTUBE_DEFAULT_THEME=light
+      
+      # (Optional) Disable new users from signing up
+      # Default: false
+      - LIGHTTUBE_DISABLE_REGISTRATION=false
+      
+      # (Optional) Disable the video proxy
+      # Enable this if you don't want videos to be proxied over LightTube
+      # This will also disable HLS/DASH playback on browsers
+      # Default: false
+      - LIGHTTUBE_DISABLE_PROXY=false
+
+      # (Optional) Enable video proxy for 3rd party apps
+      # Apps may or may not choose to follow this setting
+      # Default: false
+      - LIGHTTUBE_ENABLE_THIRD_PARTY_PROXY=false
+      
+      # (Optional) Default content language (only effects video title/descriptions,
+      # "### views"/"### subscribers"/"Published # days ago" text on search results etc.)
+      # WARNING: An invalid value may cause LightTube to not work. Make sure you put in a 
+      #          valid language ID
+      # Default: en
+      - LIGHTTUBE_DEFAULT_CONTENT_LANGUAGE=ru
+      # (Optional) Default content region (only effects the browse screen. search results
+      # and recommendations still use the region that the server connects YouTube from)
+      # WARNING: An invalid value may cause LightTube to not work. Make sure you put in a 
+      #          valid region ID
+      # Default: US
+      - LIGHTTUBE_DEFAULT_CONTENT_REGION=RU
+      
+      # (Optional) Authentication for age-gated videos
+      # Follow the following wiki page to get the required values
+      # https://github.com/kuylar/InnerTube/wiki/Authorization
+      # Only use one of the following (OAuth2 is recommended):
+      # OAuth2 based auth ========
+      - LIGHTTUBE_AUTH_TYPE=oauth2
+      - LIGHTTUBE_AUTH_REFRESH_TOKEN=
+      # Cookie based auth ========
+      - LIGHTTUBE_AUTH_TYPE=cookie
+      - LIGHTTUBE_AUTH_SAPISID=
+      - LIGHTTUBE_AUTH_PSID=
+      # ==========================
+
+  database:
+    image: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: lighttube
+      MONGO_INITDB_ROOT_PASSWORD: lighttube
+    # Recommended: Put the MongoDB files somewhere in your local drive
+    # so you can copy them to somewhere else if you ever need to
+    volumes:
+      - ./mongo:/data/db

@@ -57,3 +57,4 @@ const player = videojs(elementId, opts, function () {
 		localStorage.setItem("ltvideo.volume", this.volume())
 	})
 });
+player.mobileUi();
